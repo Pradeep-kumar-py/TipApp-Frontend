@@ -11,7 +11,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text className="text-red-400 font-bol " >Hello Pradeep!</Text>
+      <Text className="text-red-400 font-bol bg-primary " >Hello Pradeep!</Text>
       <Link href="/(auth)/login">Login</Link>
     </View>
   );
