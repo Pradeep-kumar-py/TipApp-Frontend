@@ -11,11 +11,16 @@ const login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
+
     <SafeAreaView>
       <View className='bg-background h-full flex justify-center' >
         {/* <Text className="text-red-400 font-bold bg-primary">Hello Pradeep!</Text> */}
         <View className='h-[60vh]' >
-
+          <Image
+            source={require('../../assets/photos/bookImage1.png')}
+            style={{ width: "auto", height: 200 }}
+            resizeMode="cover"
+          />
 
           <View className=' bg-cardBackground m-10 h-[40vh] shadow-lg p-5 rounded-2xl  ' >
             <View>
