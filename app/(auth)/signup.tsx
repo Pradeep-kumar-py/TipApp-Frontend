@@ -6,8 +6,16 @@ import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
 
 const signup = () => {
 
-
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleLogin = () => {
+    console.log(name, email, password)
+  }
+
 
   return (
     <SafeAreaView>
@@ -32,17 +40,21 @@ const signup = () => {
               <FontAwesome6 name="user" size={16} color="#1a4971" />
               <TextInput
                 placeholder="Full Name"
+                value={name}
+                onChangeText={setName}
                 placeholderTextColor="#767676"
                 className="bg-[#f0f8ff] text-[#767676]  flex-1 p-2  rounded-lg"
               />
             </View>
           </View>
           <View>
-            <Text className="text-textDark font-bold text-lg mb-3">Email</Text>
+            <Text className="text-textDark  font-bold text-lg mb-3">Email</Text>
             <View className="flex relative flex-row items-center border border-border bg-[#f0f8ff] p-1 rounded-lg mb-3">
               <MaterialCommunityIcons name="email-outline" size={18} color="#1a4971" />
               <TextInput
                 placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
                 placeholderTextColor="#767676"
                 className="bg-[#f0f8ff] text-[#767676]  flex-1 p-2  rounded-lg"
               />
@@ -54,6 +66,8 @@ const signup = () => {
               <MaterialCommunityIcons name="lock-outline" size={18} color="#1a4971" />
               <TextInput
                 placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 placeholderTextColor="#767676"
                 className="bg-[#f0f8ff] text-[#767676]  p-2 flex-1 rounded-lg"
@@ -71,7 +85,7 @@ const signup = () => {
             </View>
           </View>
 
-          <TouchableOpacity className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
+          <TouchableOpacity onPress={handleLogin} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
             <Text className="text-white text-center font-bold">Login</Text>
           </TouchableOpacity>
           <View className='flex flex-row gap-2 justify-center items-center'>

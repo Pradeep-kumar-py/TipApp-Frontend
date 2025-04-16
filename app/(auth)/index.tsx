@@ -8,6 +8,8 @@ import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
 
 const login = () => {
 
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false);
 
   return (
