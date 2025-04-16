@@ -1,12 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const index = () => {
+const Upload = () => {
   return (
     <View>
-      <Text>index</Text>
+      <Text>upload</Text>
     </View>
   )
 }
 
-export default index
+export default Upload
