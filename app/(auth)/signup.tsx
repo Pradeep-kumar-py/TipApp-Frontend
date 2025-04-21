@@ -1,4 +1,4 @@
-import { View, Text, Image, TextInput, TouchableOpacity, } from 'react-native'
+import { View, Text, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, } from 'react-native'
 import React, { useState } from 'react'
 import { Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -11,14 +11,17 @@ const signup = () => {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false);
+  
 
-  const handleLogin = () => {
+  const handleSignup = () => {
     console.log(name, email, password)
+
+
   }
 
 
   return (
-    <SafeAreaView>
+    <KeyboardAvoidingView>
       <View className='bg-background h-full flex justify-center' >
         {/* <Text className="text-red-400 font-bold bg-primary">Hello Pradeep!</Text> */}
 
@@ -54,6 +57,7 @@ const signup = () => {
               <TextInput
                 placeholder="Email"
                 value={email}
+                keyboardType='email-address'
                 onChangeText={setEmail}
                 placeholderTextColor="#767676"
                 className="bg-[#f0f8ff] text-[#767676]  flex-1 p-2  rounded-lg"
@@ -85,8 +89,8 @@ const signup = () => {
             </View>
           </View>
 
-          <TouchableOpacity onPress={handleLogin} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
-            <Text className="text-white text-center font-bold">Login</Text>
+          <TouchableOpacity onPress={handleSignup} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
+            <Text className="text-white text-center font-bold">Signup</Text>
           </TouchableOpacity>
           <View className='flex flex-row gap-2 justify-center items-center'>
             <Text>Already have a account ?</Text>
@@ -98,7 +102,7 @@ const signup = () => {
 
         </View>
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 

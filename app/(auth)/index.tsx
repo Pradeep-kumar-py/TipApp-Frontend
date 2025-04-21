@@ -1,9 +1,9 @@
-import { View, Text, Image, TextInput, TouchableOpacity, } from 'react-native'
+import { View, Text, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, Alert, } from 'react-native'
 import React, { useState } from 'react'
 import { Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
-
+import { useAuthStore } from '../../store/authStore';
 
 
 const login = () => {
@@ -12,9 +12,23 @@ const login = () => {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false);
 
+  const {  isLoading, loginUser } = useAuthStore()
+
+  const handleLogin = async () => {
+    console.log(email, password)
+
+    const response = await loginUser(email, password)
+
+    if (response.success) {
+      Alert.alert("Login Successful", response.message)
+    } else {
+      Alert.alert("Login Failed", response.message)
+    }
+  }
+
   return (
 
-    <SafeAreaView>
+    <KeyboardAvoidingView>
       <View className='bg-background h-full flex justify-center' >
         {/* <Text className="text-red-400 font-bold bg-primary">Hello Pradeep!</Text> */}
         <View className='h-[60vh]' >
@@ -31,6 +45,9 @@ const login = () => {
                 <MaterialCommunityIcons name="email-outline" size={18} color="#1a4971" />
                 <TextInput
                   placeholder="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
                   placeholderTextColor="#767676"
                   className="bg-[#f0f8ff] text-[#767676]  flex-1 p-2  rounded-lg"
                 />
@@ -42,6 +59,8 @@ const login = () => {
                 <MaterialCommunityIcons name="lock-outline" size={18} color="#1a4971" />
                 <TextInput
                   placeholder="Password"
+                  value={password}
+                  onChangeText={setPassword}
                   secureTextEntry={!showPassword}
                   placeholderTextColor="#767676"
                   className="bg-[#f0f8ff] text-[#767676]  p-2 flex-1 rounded-lg"
@@ -59,7 +78,7 @@ const login = () => {
               </View>
             </View>
 
-            <TouchableOpacity className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
+            <TouchableOpacity onPress={handleLogin} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
               <Text className="text-white text-center font-bold">Login</Text>
             </TouchableOpacity>
             <View className='flex flex-row gap-2 justify-center items-center'>
@@ -72,7 +91,7 @@ const login = () => {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 
