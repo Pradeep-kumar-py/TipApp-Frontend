@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 import { Link } from "expo-router";
+import {Entypo} from '@expo/vector-icons';
 
 export default function Index() {
   return (

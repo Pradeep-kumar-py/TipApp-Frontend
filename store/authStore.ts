@@ -1,15 +1,22 @@
-import { saveAccessToken, saveRefreshToken } from '../utils/secureStore';
+import { userType } from '@/utils/types';
+import { clearSecureStore, saveAccessToken, saveRefreshToken, saveUser } from '../utils/secureStore';
 import { create } from 'zustand';
 
 
 interface AuthState {
-    user: any;
-    accessToken: string | null;
-    refreshToken: string | null;
+    user: userType | null;
+    accessToken?: string | null;
+    refreshToken?: string | null;
     isLoading: boolean;
-    registerUser: (name: string, email: string, password: string) => Promise<any>;
-    loginUser: (email: string, password: string) => Promise<any>;
-    logoutUser: () => Promise<void>;
+    setisLoading: (isLoading: boolean) => void;
+    setUser: (user: any) => void;
+    setAccessToken: (accessToken: string) => void;
+    setRefreshToken: (refreshToken: string) => void;
+    clearTokens: () => void;
+    checkmethod: () => void;
+    loginUser: (email: string, password: string) => Promise<{ success: boolean; message: string; data?: any }>;
+    registerUser: (name: string, email: string, password: string) => Promise<{ success: boolean; message: string; data?: any }>;
+
 }
 
 
@@ -18,43 +25,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     accessToken: null,
     refreshToken: null,
     isLoading: false,
-    // setAccessToken: (token: String) => set({ accessToken: token }),
-    // setRefreshToken: (token: String) => set({ refreshToken: token }),
-    // clearTokens: () => set({ accessToken: null, refreshToken: null }),
+    setisLoading: (isLoading: boolean) => set({ isLoading }),
+    setUser: (user: any) => set({ user }),
+    setAccessToken: (accessToken: string) => set({ accessToken }),
+    setRefreshToken: (refreshToken: string) => set({ refreshToken }),
+    clearTokens: () => set({ accessToken: null, refreshToken: null }),
 
-    registerUser: async (name: string, email: string, password: string) => {
+    checkmethod: () => {
         set({ isLoading: true });
-        try {
-            const response = await fetch('https://tipapp.azurewebsites.net/api/user/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, email, password }),
-            });
-            const data = await response.json();
-
-            // Check if the response is ok (status code 200-299)
-            if(!response.ok) {
-                throw new Error(data.message);
-            }
-
-            // Save the access token and refresh token to secure storage
-            await saveAccessToken(data.accessToken);
-            await saveRefreshToken(data.refreshToken);
-
-
-            // Update the store with user data and tokens
-            set({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken, isLoading: false });
-
-            
-            return {success: true, message: 'User registered successfully'};
-
-        } catch (error) {
-            console.error('Error registering user:', error);
-            set({ isLoading: false });
-            return {success: false, message: 'Error registering user'};
-        }
+        setTimeout(() => {
+            // clearTokens();
+        }, 4000);
+        console.log("Check method called")
     },
 
     loginUser: async (email: string, password: string) => {
@@ -65,39 +47,78 @@ export const useAuthStore = create<AuthState>((set) => ({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email: email.toLowerCase(), password }),
             });
             const data = await response.json();
 
             // Check if the response is ok (status code 200-299)
-            if(!response.ok) {
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+            console.log("Data11111: ", data)
+            // Save the access token and refresh token to secure storage
+            await saveAccessToken(data.accessToken);
+            await saveRefreshToken(data.refreshToken);
+            await saveUser(data.user);
+
+            // Update the store with user data and tokens
+            set({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken, isLoading: false });
+
+
+            return { success: true, message: 'User logged in successfully', data };
+
+        } catch (error) {
+            console.error('Error logging in user:', error);
+            set({ isLoading: false });
+            return { success: false, message: 'Error logging in user' };
+        }
+    },
+
+
+    registerUser: async (name: string, email: string, password: string) => {
+        set({ isLoading: true });
+        try {
+            const response = await fetch('https://tipapp.azurewebsites.net/api/user/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email: email.toLowerCase(), password }),
+            });
+            const data = await response.json();
+
+            console.log("Data: ", data)
+            // Check if the response is ok (status code 200-299)
+            if (!response.ok) {
                 throw new Error(data.message);
             }
 
             // Save the access token and refresh token to secure storage
             await saveAccessToken(data.accessToken);
             await saveRefreshToken(data.refreshToken);
+            await saveUser(data.user);
+
 
 
             // Update the store with user data and tokens
-            set({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken, isLoading: true });
+            set({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken, isLoading: false });
 
-            
-            return {success: true, message: 'User logged in successfully'};
+
+            return { success: true, message: 'User registered successfully', data };
 
         } catch (error) {
-            console.error('Error logging in user:', error);
             set({ isLoading: false });
-            return {success: false, message: 'Error logging in user'};
+            console.error('Error registering user:', error);
+            return { success: false, message: 'Error registering user', };
         }
     },
+
     logoutUser: async () => {
         set({ isLoading: false, user: null, accessToken: null, refreshToken: null });
         // Clear the access token and refresh token from secure storage
-        await saveAccessToken(null);
-        await saveRefreshToken(null);
+        await clearSecureStore();
+        console.log("User logged out successfully")
     }
-
 
 }));
 

@@ -17,12 +17,14 @@ export const saveRefreshToken = async (refreshToken: string | null) => {
 
 // This function retrieves the access token from secure storage
 export const getAccessToken = async () => {
-    return await SecureStore.getItemAsync('accessToken');
+    const token = await SecureStore.getItemAsync('accessToken');
+    return token ?? undefined; // Return undefined if token is null
 };
 
 // This function retrieves the refresh token from secure storage
-export const getRefreshToken = async () => {
-    return await SecureStore.getItemAsync('refreshToken');
+export const getRefreshToken = async (): Promise<string | undefined> => {
+    const token = await SecureStore.getItemAsync('refreshToken');
+    return token ?? undefined; // Return undefined if token is null
 };
 
 
@@ -50,6 +52,8 @@ export const saveUserData = async (userData: userType) => {
         console.error('Error saving user data:', error);
     }
 };
+
+
 // This function retrieves user data from async storage
 export const getUserData = async () => {
     try {
@@ -60,6 +64,8 @@ export const getUserData = async () => {
         return null;
     }
 };
+
+
 // This function clears user data from async storage
 export const clearUserData = async () => {
     try {
@@ -69,4 +75,44 @@ export const clearUserData = async () => {
     }
 };
 
+
+// This function save user data to async storage
+export const saveUser = async (user: userType) => {
+    try {
+        await AsyncStorage.setItem('user', JSON.stringify(user));
+    } catch (error) {
+        console.error('Error saving user data:', error);
+    }
+}
+
+
+// This function retrieves user data from async storage
+export const getUser = async ():Promise<userType | null> => {
+    try {
+        const user = await AsyncStorage.getItem('user');
+        return user ? JSON.parse(user) : null;
+    } catch (error) {
+        console.error('Error retrieving user data:', error);
+        return null;
+    }
+}
+
+
+
+
+// This function clears user data from async storage
+export const clearUser = async () => {
+    try {
+        await AsyncStorage.removeItem('user');
+    } catch (error) {
+        console.error('Error clearing user data:', error);
+    }
+}
+// This function checks if the user is logged in by checking the access token and refresh token
+export const isLoggedIn = async ():  Promise<boolean> => {
+    // const accessToken = await getAccessToken();
+    const refreshToken = await getRefreshToken();
+    const user = await getUserData();
+    return refreshToken !== null || user !== null;
+};
 

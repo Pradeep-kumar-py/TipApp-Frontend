@@ -1,24 +1,43 @@
-import { View, Text, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, } from 'react-native'
+import { View, Text, Image, TextInput, KeyboardAvoidingView, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
+import { useAuthStore } from '@/store/authStore';
 
-const signup = () => {
+const Signup = () => {
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false);
-  
+  const { registerUser, isLoading } = useAuthStore()
 
-  const handleSignup = () => {
+
+  const handleSignup = async () => {
     console.log(name, email, password)
+    if (name === '' || email === '' || password === '') {
+      alert('Please fill all the fields')
+      return
+    }
+    const response = await registerUser(name, email, password)
+    console.log("Response: ", response)
+    if (response.success) {
+      alert('User registered successfully')
+      setEmail('')
+      setName('')
+      setPassword('')
+    }
+    else {
+      {
+        alert('User registration failed')
+        setEmail('')
+        setName('')
+        setPassword('')
+      }
 
-
+    }
   }
-
 
   return (
     <KeyboardAvoidingView>
@@ -76,7 +95,7 @@ const signup = () => {
                 placeholderTextColor="#767676"
                 className="bg-[#f0f8ff] text-[#767676]  p-2 flex-1 rounded-lg"
               />
-              <TouchableOpacity
+              <Pressable
                 onPress={() => setShowPassword(!showPassword)}
                 className="absolute right-3"
               >
@@ -85,13 +104,18 @@ const signup = () => {
                   size={18}
                   color="#1a4971"
                 />
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
 
-          <TouchableOpacity onPress={handleSignup} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
-            <Text className="text-white text-center font-bold">Signup</Text>
-          </TouchableOpacity>
+          <Pressable onPress={handleSignup} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
+            {isLoading ? (
+              <FontAwesome6 name="spinner" size={20} color="white" className="animate-spin text-center" />
+            ) : (
+              <Text className="text-white text-center font-bold">Signup</Text>
+            )}
+            {/* <Text className="text-white text-center font-bold">Signup</Text> */}
+          </Pressable>
           <View className='flex flex-row gap-2 justify-center items-center'>
             <Text>Already have a account ?</Text>
             <Link href="/(auth)" className="text-textSecondary font-bold text-center">
@@ -104,6 +128,7 @@ const signup = () => {
       </View>
     </KeyboardAvoidingView>
   )
-}
 
-export default signup
+
+}
+export default Signup
