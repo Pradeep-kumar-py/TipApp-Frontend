@@ -7,7 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 const Upload = () => {
 
-  const [rating, setRating] = useState(null)
+  const [rating, setRating] = useState(0)
   const [image, setImage] = useState<string | null>(null)
 
   // const pickImageAsync = async () => {
