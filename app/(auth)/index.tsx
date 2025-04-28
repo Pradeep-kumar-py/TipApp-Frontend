@@ -98,6 +98,7 @@ const login = () => {
       Alert.alert("Login Successful", response.message)
       setEmail('')
       setPassword('')
+      router.push("/(tabs)")
     }
     else {
       Alert.alert("Login Failed", response.message)

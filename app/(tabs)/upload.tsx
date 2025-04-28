@@ -98,32 +98,32 @@ const Upload = () => {
   //   alert("User logged out successfully")
   // }
 
-  const uploadProfileImage = async () => {
-    if (!imageFile) {
-      alert("Please select an image first")
-      return
-    }
+  // const uploadProfileImage = async () => {
+  //   if (!imageFile) {
+  //     alert("Please select an image first")
+  //     return
+  //   }
 
-    const formData = new FormData();
-    formData.append('file', imageFile as any);
+  //   const formData = new FormData();
+  //   formData.append('file', imageFile as any);
 
-    try {
-      const result = await uploadBook(formData);
-      console.log("Upload Result: ", result);
-      if (result.success) {
-        alert("Profile image uploaded successfully!");
-        // Reset form or navigate away
-        setImageFile(null);
-        setSelectedImage(undefined);
-      } else {
-        console.error("Upload failed123: ", result.message);
-        alert(`Upload failed: ${result.message}`);
-      }
-    } catch (error) {
-      alert("An error occurred while uploading the profile image");
-      console.error(error);
-    }
-  }
+  //   try {
+  //     const result = await uploadBook(formData);
+  //     console.log("Upload Result: ", result);
+  //     if (result.success) {
+  //       alert("Profile image uploaded successfully!");
+  //       // Reset form or navigate away
+  //       setImageFile(null);
+  //       setSelectedImage(undefined);
+  //     } else {
+  //       console.error("Upload failed123: ", result.message);
+  //       alert(`Upload failed: ${result.message}`);
+  //     }
+  //   } catch (error) {
+  //     alert("An error occurred while uploading the profile image");
+  //     console.error(error);
+  //   }
+  // }
     
 
 
