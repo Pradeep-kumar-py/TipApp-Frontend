@@ -4,7 +4,7 @@ import { Link, useRouter, } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
-import { getAccessToken, getRefreshToken, getUser, isLoggedIn } from '@/utils/secureStore';
+import { getAccessToken, getRefreshToken, getUser, isLoggedIn, isTokenExpired } from '@/utils/secureStore';
 // import { loginUser } from '@/store/route';
 
 
@@ -61,6 +61,7 @@ const login = () => {
   useEffect(() => {
     (async () => {
       const isUserLoggedIn = await isLoggedIn()
+
       console.log("isUserLoggedIn: ", isUserLoggedIn)
       if (isUserLoggedIn) {
         const user = await getUser()
@@ -76,7 +77,19 @@ const login = () => {
     })()
   }, [])
 
-
+  useEffect(() => {
+    (async ()=>{
+      const refreshToken = await getRefreshToken() || ""
+      const isRefreshTokenValid = isTokenExpired(refreshToken)
+      console.log("isRefreshTokenValid: ", isRefreshTokenValid)
+      if(!isRefreshTokenValid) {
+        console.log("Refresh token is expired")
+        router.push("/(auth)")
+      }
+    })()
+  }, [])
+  
+  
 
   const handleLogin = async () => {
     const response = await loginUser(email, password)
@@ -96,7 +109,7 @@ const login = () => {
 
   // console.log("user: ", user)
   console.log("accessToken: ", accessToken)
-  // console.log("refreshToken: ", refreshToken )
+  console.log("refreshToken: ", refreshToken )
 
 
 

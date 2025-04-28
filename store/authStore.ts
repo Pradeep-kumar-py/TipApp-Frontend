@@ -1,6 +1,9 @@
 import { userType } from '@/utils/types';
 import { clearSecureStore, saveAccessToken, saveRefreshToken, saveUser } from '../utils/secureStore';
 import { create } from 'zustand';
+import jwtDecode from 'jwt-decode';
+import { fetchWithAuth } from '@/utils/refreshAccessToken';
+
 
 
 interface AuthState {
@@ -16,11 +19,15 @@ interface AuthState {
     checkmethod: () => void;
     loginUser: (email: string, password: string) => Promise<{ success: boolean; message: string; data?: any }>;
     registerUser: (name: string, email: string, password: string) => Promise<{ success: boolean; message: string; data?: any }>;
+    logoutUser: () => Promise<void>;
+    uploadBook: (formData: FormData) => Promise<{ success: boolean; message: string; data?: any }>;
+    // refreshTokens: () => Promise<boolean>;
+
 
 }
 
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     accessToken: null,
     refreshToken: null,
@@ -118,7 +125,66 @@ export const useAuthStore = create<AuthState>((set) => ({
         // Clear the access token and refresh token from secure storage
         await clearSecureStore();
         console.log("User logged out successfully")
-    }
+    },
+
+    uploadBook: async (formData: FormData): Promise<{ success: boolean; message: string; data?: any }> => {
+        set({ isLoading: true });
+        let retries = 3;
+
+        while (retries > 0) {
+            try {
+                // Get the current state to access the accessToken
+                const { accessToken } = get();
+                if (!accessToken) {
+                    set({ isLoading: false });
+                    return { success: false, message: 'No access token found' };
+                }
+
+                const response = await fetchWithAuth('https://tipapp.azurewebsites.net/api/upload/book', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const text = await response.text();
+
+                // try parse JSON, else fall back to text
+                let data: any;
+                try {
+                  data = JSON.parse(text);
+                } catch {
+                  data = { message: text };
+                }
+                // const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to upload book');
+                }
+
+                set({ isLoading: false });
+                return { success: true, message: 'Book uploaded successfully', data };
+
+            } catch (error: any) {
+                retries--;
+                if (retries === 0) {
+                    set({ isLoading: false });
+                    return {
+                        success: false,
+                        message: error.message || 'Failed to upload book'
+                    };
+                }
+                // Wait before retrying (you can implement exponential backoff here)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        // This should never be reached because of the returns inside the loop,
+        // but TypeScript needs it for type safety
+        set({ isLoading: false });
+        return { success: false, message: 'Maximum retries exceeded' };
+    },
+
+
+
 
 }));
 

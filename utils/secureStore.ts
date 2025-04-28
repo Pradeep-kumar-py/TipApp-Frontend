@@ -1,6 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userType } from './types';
+import { jwtDecode } from 'jwt-decode';
 
 
 // This function saves the access token to secure storage
@@ -45,25 +46,25 @@ export const clearSecureStore = async () => {
 }
 
 //This function saves user data in async storage
-export const saveUserData = async (userData: userType) => {
-    try {
-        await AsyncStorage.setItem('userData', JSON.stringify(userData));
-    } catch (error) {
-        console.error('Error saving user data:', error);
-    }
-};
+// export const saveUserData = async (userData: userType) => {
+//     try {
+//         await AsyncStorage.setItem('userData', JSON.stringify(userData));
+//     } catch (error) {
+//         console.error('Error saving user data:', error);
+//     }
+// };
 
 
 // This function retrieves user data from async storage
-export const getUserData = async () => {
-    try {
-        const userData = await AsyncStorage.getItem('userData');
-        return userData ? JSON.parse(userData) : null;
-    } catch (error) {
-        console.error('Error retrieving user data:', error);
-        return null;
-    }
-};
+// export const getUserData = async () => {
+//     try {
+//         const userData = await AsyncStorage.getItem('userData');
+//         return userData ? JSON.parse(userData) : null;
+//     } catch (error) {
+//         console.error('Error retrieving user data:', error);
+//         return null;
+//     }
+// };
 
 
 // This function clears user data from async storage
@@ -112,7 +113,20 @@ export const clearUser = async () => {
 export const isLoggedIn = async ():  Promise<boolean> => {
     // const accessToken = await getAccessToken();
     const refreshToken = await getRefreshToken();
-    const user = await getUserData();
-    return refreshToken !== null || user !== null;
+    const user = await getUser();
+    return !!refreshToken&& !!user;
 };
+
+
+// is token expired or not
+export const isTokenExpired = (token: string):boolean =>{
+    try {
+      const { exp } = jwtDecode(token);
+      // exp is in seconds since epoch
+      return Date.now() >= (exp ?? 0) * 1000; // Check if current time is greater than expiration time
+    } catch {
+      // Invalid token format → treat as expired
+      return true;
+    }
+  }
 
