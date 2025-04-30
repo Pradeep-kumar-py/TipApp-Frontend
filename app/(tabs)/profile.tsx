@@ -8,12 +8,13 @@ import { clearSecureStore } from '@/utils/secureStore'
 import { useRouter } from 'expo-router'
 import { fetchWithAuth } from '@/utils/refreshAccessToken'
 import { UserBookType } from '@/utils/types'
+import * as ImagePicker from 'expo-image-picker';
 
 const Profile = () => {
 
-  const { user, fetchUserBooks, isLoading } = useAuthStore()
+  const { user, fetchUserBooks, isLoading, uploadProfileImage } = useAuthStore()
   const router = useRouter()
-  console.log(user)
+  // console.log(user)
 
   const [Books, setBooks] = useState<UserBookType[]>([])
   const [pageNo, setPageNo] = useState(1)
@@ -21,21 +22,24 @@ const Profile = () => {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [isLoadingMore, setisLoadingMore] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageFile, setImageFile] = useState<any>(null);
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+
+
 
   const limit = 5 // Number of books to fetch per page
-
-
 
   useEffect(() => {
     (async () => {
       setIsInitialLoading(true)
       setBooks([])
       const result = await fetchUserBooks(1, limit)
-      console.log("Result: ", result)
+      // console.log("Result: ", result)
       if (result.success) {
         setBooks([...result.data.books])
         setHasMore(result.data.totalPages > 1)
-        setPageNo(1) 
+        setPageNo(1)
         setIsInitialLoading(false)
       } else {
         console.log("Error fetching books: ", result.message)
@@ -43,9 +47,9 @@ const Profile = () => {
       }
     })()
   }, [])
-  console.log("Books: ", Books)
-  console.log("hasmore",hasMore)
-  console.log("pageNo: ", pageNo) // Check if there are more books to load
+  // console.log("Books: ", Books)
+  // console.log("hasmore", hasMore)
+  // console.log("pageNo: ", pageNo) // Check if there are more books to load
 
 
   const handleRefresh = async () => {
@@ -56,20 +60,20 @@ const Profile = () => {
       console.log("Result from handle refresh: ", result)
       if (result.success) {
         setBooks([...result.data.books])
-        setPageNo(1) 
+        setPageNo(1)
         setHasMore(1 < result.data.totalPages)
       } else {
         console.log("Error fetching books: ", result.message)
       }
     } catch (error) {
       console.log("Error fetching books: ", error)
-    }finally {
+    } finally {
       setIsRefreshing(false)
     }
   };
 
   const loadMoreBooks = async () => {
-    if(!hasMore || isLoading || isLoadingMore) return // Prevent loading more if there are no more books
+    if (!hasMore || isLoading || isLoadingMore) return // Prevent loading more if there are no more books
 
     setisLoadingMore(true)
     try {
@@ -81,7 +85,7 @@ const Profile = () => {
         setBooks(prevBooks => [...prevBooks, ...result.data.books]) // Append new books to the existing list
         setPageNo(nextPage) // Update the page number
         setHasMore(nextPage < result.data.totalPages) // Check if there are more pages
-      }else {
+      } else {
         console.log("Error fetching books: ", result.message)
         // Alert.alert("Error", "Failed to load more books")
       }
@@ -97,6 +101,80 @@ const Profile = () => {
   }
 
 
+  const selectImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 1,
+      });
+  
+      if (!result.canceled) {
+        const asset = result.assets[0];
+        // 1) Build the image file object
+        const imageData = {
+          uri: asset.uri,
+          type: asset.mimeType ?? 'image/jpeg',
+          name: asset.fileName ?? 'photo.jpg',
+        };
+        // 2) Store in state
+        setImageFile(imageData);
+        setSelectedImage(asset.uri);
+        // 3) Return it
+        return imageData;
+      }
+      return null;
+    } catch (err) {
+      console.error("Error picking image:", err);
+      return null;
+    }
+  };
+  
+
+  const UploadImage = async () => {
+    setUploadingImage(true);
+    try {
+      const selectedImageData = await selectImage();
+      if (!selectedImageData) {
+        setUploadingImage(false);
+        return;
+      }
+  
+      const formData = new FormData();
+      formData.append('profileImage', selectedImageData as any); // <-- this is the proper file object
+      // <-- now this is the proper file object
+  
+      const result = await uploadProfileImage(formData);
+      console.log("Upload Result:", result);
+      Alert.alert(result.success ? "Uploaded!" : "Upload failed", result.message);
+    } catch (error) {
+      console.error("Upload error:", error);
+      Alert.alert("Error", "Failed to upload image");
+    } finally {
+      setImageFile(null);
+      setUploadingImage(false);
+    }
+  };
+  
+
+
+  const handleProfileImage = () => {
+    Alert.alert('Upload', 'Want to upload Profile image ?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Upload',
+        onPress: () => {
+          UploadImage()
+          console.log('Image Uploaded')
+        },
+        style: 'destructive',
+      },
+    ])
+    console.log('Upload image pressed')
+  }
 
 
 
@@ -108,21 +186,27 @@ const Profile = () => {
     return (
       <View className="flex justify-between bg-cardBackground p-4 rounded-lg shadow-md mx-5 my-4">
         <View className="flex-row gap-4 items-center">
-          <Pressable onPress={() => console.log('Profile image pressed')}>
-            <Image
-              source={
-                user?.profileImage
-                  ? { uri: user.profileImage }
-                  : require('../../assets/images/user12.jpeg')
-              }
-              style={{
-                width: '25%',
-                height: 80,
-                aspectRatio: 1,
-                borderRadius: "50%",
-              }}
-              className="w-12 h-12 rounded-full mr-4"
-            />
+          <Pressable onPress={handleProfileImage}>
+            {uploadingImage ? (
+              <FontAwesome6 name="spinner" size={20} color="blue" className="animate-spin ml-3 text-center" />
+            ) : (
+              <Image
+                source={
+                  selectedImage
+                    ? { uri: selectedImage }
+                    : user?.profileImage
+                      ? { uri: user.profileImage }
+                      : require('../../assets/images/user12.jpeg')
+                }
+                style={{
+                  width: '25%',
+                  height: 80,
+                  aspectRatio: 1,
+                  borderRadius: 50,
+                }}
+                className="w-12 h-12 rounded-full mr-4"
+              />
+            )}
           </Pressable>
           <View className=' flex-1 ' >
             <Text className="text-3xl text-textDark font-bold capitalize ">{user?.name}</Text>
@@ -237,11 +321,11 @@ const Profile = () => {
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
             ListFooterComponent={
-              isLoadingMore? () => (
-                  <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-                    <ActivityIndicator size="small" color="#1976D2" />
-                  </View>
-                )
+              isLoadingMore ? () => (
+                <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color="#1976D2" />
+                </View>
+              )
                 : null
             }
           />

@@ -27,3 +27,20 @@ export interface UserBookType {
     createdAt: string,
     
 }
+
+interface UserType {
+    name?: string;
+    profileImage?: string;
+    // Add other user properties as needed
+  }
+
+export interface BookType {
+    _id: string,
+    title: string,
+    caption: string,
+    image: string,
+    rating: string,
+    user?:UserType,
+    link: string,
+    createdAt: string,
+}

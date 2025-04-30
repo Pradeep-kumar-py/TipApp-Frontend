@@ -23,6 +23,8 @@ interface AuthState {
     uploadBook: (formData: FormData) => Promise<{ success: boolean; message: string; data?: any }>;
     // refreshTokens: () => Promise<boolean>;
     fetchUserBooks: (pageNo: number, limit: number) => Promise<{ success: boolean; message: string; data?: any }>;
+    fetchAllBooks: (pageNo: number, limit: number) => Promise<{ success: boolean; message: string; data?: any }>;
+    uploadProfileImage: (formData: FormData) => Promise<{ success: boolean; message: string; data?: any }>;
 
 
 }
@@ -151,9 +153,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 // try parse JSON, else fall back to text
                 let data: any;
                 try {
-                  data = JSON.parse(text);
+                    data = JSON.parse(text);
                 } catch {
-                  data = { message: text };
+                    data = { message: text };
                 }
                 // const data = await response.json();
 
@@ -209,8 +211,54 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ isLoading: false });
             return { success: false, message: 'Error fetching user books' };
         }
-    }
+    },
 
+    fetchAllBooks: async (pageNo: number, limit: number): Promise<{ success: boolean; message: string; data?: any }> => {
+        set({ isLoading: true });
+        try {
+            const response = await fetchWithAuth(`https://tipapp.azurewebsites.net/api/book/getallbooks?page=${pageNo}&limit=${limit}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            set({ isLoading: false });
+            return { success: true, message: 'Books fetched successfully', data };
+
+        } catch (error) {
+            console.error('Error fetching all books:', error);
+            set({ isLoading: false });
+            return { success: false, message: 'Error fetching all books' };
+        }
+    },
+
+    uploadProfileImage: async (formData: FormData): Promise<{ success: boolean; message: string; data?: any }> => {
+        try {
+            const response = await fetchWithAuth('https://tipapp.azurewebsites.net/api/upload/profileImage', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+            return { success: true, message: 'Profile image uploaded successfully', data };
+
+        } catch (error) {
+            console.error('Error uploading profile image:', error);
+            set({ isLoading: false });
+            return { success: false, message: 'Error uploading profile image' };
+        }
+
+    }
 
 
 }));
