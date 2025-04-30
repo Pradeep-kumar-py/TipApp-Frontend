@@ -22,6 +22,7 @@ interface AuthState {
     logoutUser: () => Promise<void>;
     uploadBook: (formData: FormData) => Promise<{ success: boolean; message: string; data?: any }>;
     // refreshTokens: () => Promise<boolean>;
+    fetchUserBooks: (pageNo: number, limit: number) => Promise<{ success: boolean; message: string; data?: any }>;
 
 
 }
@@ -183,6 +184,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return { success: false, message: 'Maximum retries exceeded' };
     },
 
+    fetchUserBooks: async (pageNo: number, limit: number): Promise<{ success: boolean; message: string; data?: any }> => {
+        set({ isLoading: true });
+        try {
+
+            const response = await fetchWithAuth(`https://tipapp.azurewebsites.net/api/book/getuserbooks?page=${pageNo}&limit=${limit}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            set({ isLoading: false });
+            return { success: true, message: 'Books fetched successfully', data };
+
+        } catch (error) {
+            console.error('Error fetching user books:', error);
+            set({ isLoading: false });
+            return { success: false, message: 'Error fetching user books' };
+        }
+    }
 
 
 

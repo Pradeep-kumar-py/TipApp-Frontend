@@ -15,3 +15,15 @@ export interface AuthState {
     loginUser: (email: string, password: string) => Promise<any>;
     logoutUser: () => Promise<void>;
 }
+
+export interface UserBookType {
+    _id: string,
+    title: string,
+    caption: string,
+    image: string,
+    rating: string,
+    user:string,
+    link: string,
+    createdAt: string,
+    
+}

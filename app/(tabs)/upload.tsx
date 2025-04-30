@@ -1,4 +1,4 @@
-import { View, Text, KeyboardAvoidingView, ScrollView, TouchableOpacity, TextInput, Pressable, Platform } from 'react-native'
+import { View, Text, KeyboardAvoidingView, ScrollView,  TextInput, Pressable, Platform } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
