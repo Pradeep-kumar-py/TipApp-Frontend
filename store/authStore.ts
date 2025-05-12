@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import jwtDecode from 'jwt-decode';
 import { fetchWithAuth } from '@/utils/refreshAccessToken';
 
-
+const API_BASE_URL = "https://tipapp.azurewebsites.net"
 
 interface AuthState {
     user: userType | null;
@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     loginUser: async (email: string, password: string) => {
         set({ isLoading: true });
         try {
-            const response = await fetch('https://tipapp.azurewebsites.net/api/user/login', {
+            const response = await fetch(`${API_BASE_URL}/api/user/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     registerUser: async (name: string, email: string, password: string) => {
         set({ isLoading: true });
         try {
-            const response = await fetch('https://tipapp.azurewebsites.net/api/user/register', {
+            const response = await fetch(`${API_BASE_URL}/api/user/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                     return { success: false, message: 'No access token found' };
                 }
 
-                const response = await fetchWithAuth('https://tipapp.azurewebsites.net/api/upload/book', {
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/upload/book`, {
                     method: 'POST',
                     body: formData,
                 });
@@ -190,7 +190,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: true });
         try {
 
-            const response = await fetchWithAuth(`https://tipapp.azurewebsites.net/api/book/getuserbooks?page=${pageNo}&limit=${limit}`, {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/book/getuserbooks?page=${pageNo}&limit=${limit}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -216,7 +216,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     fetchAllBooks: async (pageNo: number, limit: number): Promise<{ success: boolean; message: string; data?: any }> => {
         set({ isLoading: true });
         try {
-            const response = await fetchWithAuth(`https://tipapp.azurewebsites.net/api/book/getallbooks?page=${pageNo}&limit=${limit}`, {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/book/getallbooks?page=${pageNo}&limit=${limit}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -241,7 +241,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     uploadProfileImage: async (formData: FormData): Promise<{ success: boolean; message: string; data?: any }> => {
         try {
-            const response = await fetchWithAuth('https://tipapp.azurewebsites.net/api/upload/profileImage', {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/upload/profileImage`, {
                 method: 'POST',
                 body: formData,
             });
