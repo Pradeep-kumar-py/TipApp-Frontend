@@ -1,1 +1,1 @@
-export const API_BASE_URLS = "https://tipapp.azurewebsites.net"
+export const API_BASE_URLS: string = "https://tipapp.azurewebsites.net"
