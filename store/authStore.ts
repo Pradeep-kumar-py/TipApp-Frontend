@@ -1,10 +1,11 @@
 import { userType } from '@/utils/types';
 import { clearSecureStore, saveAccessToken, saveRefreshToken, saveUser } from '../utils/secureStore';
 import { create } from 'zustand';
+import { API_BASE_URLS } from '@/utils/constant';
 import jwtDecode from 'jwt-decode';
 import { fetchWithAuth } from '@/utils/refreshAccessToken';
+const API_BASE_URL = API_BASE_URLS
 
-const API_BASE_URL = "https://tipapp.azurewebsites.net"
 
 interface AuthState {
     user: userType | null;
