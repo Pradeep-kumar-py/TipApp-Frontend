@@ -19,44 +19,24 @@ const login = () => {
 
   const router = useRouter()
 
-  // const handleLogin = async () => {
-  //   setisLoading(true)
-  //   if (!email || !password) {
-  //     Alert.alert("Please fill in all fields")
-  //     return
-  //   }
 
-  //   const response = await loginUser(email, password)
-  //   console.log("Response: ", response.data)
-  //   setUser(response.data.user)
+  useEffect(() => {
+    (async () => {
+      try {
+        const refreshToken = await getRefreshToken() || ""
+        const isTokenValid = !isTokenExpired(refreshToken)
+        console.log("isTokenValid: ", isTokenValid)
 
-  //   if (response.success) {
-  //     Alert.alert("Login Successful", response.message)
-  //   } else {
-  //     Alert.alert("Login Failed", response.message)
-  //   }
-  //   setisLoading(false)
-
-  //   // console.log("Access Token: ", accessToken)
-  //   // console.log("Refresh Token: ", refreshToken)
-  //   // console.log("User Data: ", response.user)
-  //   // console.log("User2: ", user)
-  // }
-
-  // useEffect(() => {
-  //   (async () => {
-  //     const user = await getUser()
-  //     const accessToken = await getAccessToken() || ""
-  //     const refreshToken = await getRefreshToken() || ""
-  //     setRefreshToken(refreshToken)
-  //     setUser(user)
-  //     setAccessToken(accessToken)
-  //     console.log("User Data: ", user)
-  //     // Alert.alert("User Data: ", user)
-  //   })()
-  // }, [])
-
-
+        if (!isTokenValid) {
+          console.log("Refresh token is expired")
+          router.push("/(auth)")
+        }
+      } catch (error) {
+        console.log("Error checking token: ", error)
+        router.push("/(auth)")
+      }
+    })()
+  }, [])
 
   useEffect(() => {
     (async () => {
@@ -71,25 +51,15 @@ const login = () => {
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
         router.push("/(tabs)")
-      }else {
+      } else {
         console.log("User is not logged in")
       }
     })()
   }, [])
 
-  useEffect(() => {
-    (async ()=>{
-      const refreshToken = await getRefreshToken() || ""
-      const isRefreshTokenValid = isTokenExpired(refreshToken)
-      console.log("isRefreshTokenValid: ", isRefreshTokenValid)
-      if(!isRefreshTokenValid) {
-        console.log("Refresh token is expired")
-        router.push("/(auth)")
-      }
-    })()
-  }, [])
-  
-  
+
+
+
 
   const handleLogin = async () => {
     const response = await loginUser(email, password)
@@ -110,7 +80,7 @@ const login = () => {
 
   // console.log("user: ", user)
   console.log("accessToken: ", accessToken)
-  console.log("refreshToken: ", refreshToken )
+  console.log("refreshToken: ", refreshToken)
 
 
 

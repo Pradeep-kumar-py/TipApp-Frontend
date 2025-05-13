@@ -1,11 +1,12 @@
 import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { BookType } from "@/utils/types";
 import { Image } from "expo-image";
+import { getRefreshToken, isTokenExpired } from "@/utils/secureStore";
 
 export default function Index() {
 
@@ -15,6 +16,10 @@ export default function Index() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [isLoadingMore, setisLoadingMore] = useState(false)
+
+
+    const router = useRouter()
+
 
   const { fetchAllBooks, isLoading } = useAuthStore()
   const limit = 5 // Number of books to fetch per page
@@ -36,6 +41,21 @@ export default function Index() {
       }
     })()
   }, [])
+
+
+  // useEffect(() => {
+  //   (async ()=>{
+  //     const refreshToken = await getRefreshToken() || ""
+  //     const isRefreshTokenValid = isTokenExpired(refreshToken)
+  //     console.log("isRefreshTokenValid: ", isRefreshTokenValid)
+  //     if(!isRefreshTokenValid) {
+  //       console.log("Refresh token is expired")
+  //       router.push("/(auth)")
+  //     }
+  //   })()
+  // }, [])
+
+
   const handleRefresh = async () => {
     setIsRefreshing(true)
     try {

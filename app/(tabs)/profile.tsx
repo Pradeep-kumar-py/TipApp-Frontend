@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, FlatList, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, ScrollView, FlatList, Alert, ActivityIndicator, Linking } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
@@ -12,7 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 const Profile = () => {
 
-  const { user, fetchUserBooks, isLoading, uploadProfileImage } = useAuthStore()
+  const { user, fetchUserBooks, isLoading, uploadProfileImage, deleteBook } = useAuthStore()
   const router = useRouter()
   // console.log(user)
 
@@ -108,7 +108,7 @@ const Profile = () => {
         allowsEditing: true,
         quality: 1,
       });
-  
+
       if (!result.canceled) {
         const asset = result.assets[0];
         // 1) Build the image file object
@@ -129,7 +129,7 @@ const Profile = () => {
       return null;
     }
   };
-  
+
 
   const UploadImage = async () => {
     setUploadingImage(true);
@@ -139,11 +139,11 @@ const Profile = () => {
         setUploadingImage(false);
         return;
       }
-  
+
       const formData = new FormData();
       formData.append('profileImage', selectedImageData as any); // <-- this is the proper file object
       // <-- now this is the proper file object
-  
+
       const result = await uploadProfileImage(formData);
       console.log("Upload Result:", result);
       Alert.alert(result.success ? "Uploaded!" : "Upload failed", result.message);
@@ -155,7 +155,7 @@ const Profile = () => {
       setUploadingImage(false);
     }
   };
-  
+
 
 
   const handleProfileImage = () => {
@@ -175,6 +175,43 @@ const Profile = () => {
     ])
     console.log('Upload image pressed')
   }
+
+  const deleteOneBook = async (bookId: string) => {
+    try {
+      const result = await deleteBook(bookId)
+      console.log("Delete Result:", result);
+
+      if (result.success) {
+        // Update local state to remove the deleted book
+        setBooks(prevBooks => prevBooks.filter(book => book._id !== bookId));
+        Alert.alert("Success", "Book deleted successfully");
+      } else {
+        Alert.alert("Error", result.message || "Failed to delete book");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      Alert.alert("Error", "Failed to delete book");
+    }
+  }
+
+  const handleDeleteBook = async (bookId: string) => {
+    Alert.alert('Delete', 'Are you sure you want to delete this book?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        onPress: () => {
+          deleteOneBook(bookId)
+          console.log('Book deleted')
+        },
+        style: 'destructive',
+      },
+    ])
+
+  }
+
 
 
 
@@ -254,15 +291,35 @@ const Profile = () => {
               ))}
             </View>
             <Text className="text-placeholderText">{item.caption}</Text>
+            {item.link !== '' && (
+              <Pressable
+                onPress={() => Linking.openURL(item.link)}
+                className="mt-1"
+              >
+                <Text
+                  className="text-blue-600 underline"
+                  numberOfLines={1}
+                >
+                  {item.link}
+                </Text>
+              </Pressable>
+            )}
             <Text className="text-placeholderText">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</Text>
           </View>
-          <View className='w-8' >
+          <Pressable onPress={() => handleDeleteBook(item._id)} className='w-8' >
             <MaterialIcons name="delete" size={30} color="#1976D2" />
-          </View>
+          </Pressable>
         </View>
       </View>
 
     )
+  }
+
+  const logoutUser = async () => {
+    await clearSecureStore();
+    // Clear user data from the store
+    Alert.alert("User logged out successfully")
+    router.push('/(auth)')
   }
 
   const handleLogout = () => {
@@ -284,12 +341,6 @@ const Profile = () => {
     console.log('Logout pressed')
   }
 
-  const logoutUser = async () => {
-    await clearSecureStore();
-    // Clear user data from the store
-    Alert.alert("User logged out successfully")
-    router.push('/(auth)')
-  }
 
 
   return (

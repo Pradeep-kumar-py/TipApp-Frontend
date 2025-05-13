@@ -26,7 +26,7 @@ interface AuthState {
     fetchUserBooks: (pageNo: number, limit: number) => Promise<{ success: boolean; message: string; data?: any }>;
     fetchAllBooks: (pageNo: number, limit: number) => Promise<{ success: boolean; message: string; data?: any }>;
     uploadProfileImage: (formData: FormData) => Promise<{ success: boolean; message: string; data?: any }>;
-
+    deleteBook: (bookId: string) => Promise<{ success: boolean; message: string; data?: any }>;
 
 }
 
@@ -259,6 +259,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             return { success: false, message: 'Error uploading profile image' };
         }
 
+    },
+    deleteBook: async (bookId: string): Promise<{ success: boolean; message: string; data?: any }> => {
+        set({ isLoading: true });
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/book/deletebook/${bookId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            set({ isLoading: false });
+            return { success: true, message: 'Book deleted successfully', data };
+
+        } catch (error) {
+            console.error('Error deleting book:', error);
+            set({ isLoading: false });
+            return { success: false, message: 'Error deleting book' };
+        }
     }
 
 
