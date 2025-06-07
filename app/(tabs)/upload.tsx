@@ -7,6 +7,9 @@ import { Image } from 'expo-image'
 import { useAuthStore } from '@/store/authStore';
 import { clearSecureStore } from '@/utils/secureStore';
 import { StatusBar } from 'expo-status-bar';
+import { MotiPressable } from 'moti/interactions'
+import { AnimatedButton } from '@/Component/AnimatedButton';
+
 
 const Upload = () => {
 
@@ -20,6 +23,7 @@ const Upload = () => {
 
   const { uploadBook, isLoading } = useAuthStore()
 
+  
 
   const pickImageAsync = async () => {
     let image = await ImagePicker.launchImageLibraryAsync({
@@ -211,13 +215,15 @@ const Upload = () => {
                   </View>
                 </View>
               </View>
-              <Pressable onPress={handleSubmit} className="bg-primary p-2 rounded-lg mt-5">
+              {/* <Pressable onPress={handleSubmit} className="bg-primary p-2 rounded-lg mt-5">
                 {isLoading ? (
                   <FontAwesome6 name="spinner" size={20} color="white" className="animate-spin ml-3 text-center" />
                 ) : (
                   <Text className="text-white text-center">Add book or course</Text>
                 )}
-              </Pressable>
+              </Pressable> */}
+              <AnimatedButton handleSubmit={handleSubmit} isLoading={isLoading} />
+
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
