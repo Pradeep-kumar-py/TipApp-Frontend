@@ -9,6 +9,7 @@ import { useRouter } from 'expo-router'
 import { fetchWithAuth } from '@/utils/refreshAccessToken'
 import { UserBookType } from '@/utils/types'
 import * as ImagePicker from 'expo-image-picker';
+import { StatusBar } from 'expo-status-bar'
 
 const Profile = () => {
 
@@ -319,7 +320,7 @@ const Profile = () => {
     await clearSecureStore();
     // Clear user data from the store
     Alert.alert("User logged out successfully")
-    router.push('/(auth)')
+    router.replace('/(auth)')
   }
 
   const handleLogout = () => {
@@ -344,45 +345,55 @@ const Profile = () => {
 
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <View className='flex-1' >
-        <UserBox />
-        <Pressable onPress={handleLogout} className="flex-row items-center justify-center bg-primary p-2 rounded-lg mx-5 ">
-          <Text className="text-white font-semibold text-lg">Logout</Text>
-        </Pressable>
-        <View className='px-8 mt-8  ' >
-          <View className="flex-row justify-between items-center text-textDark mb-4 ">
-            <Text className='text-2xl font-bold' >Your Recomendation</Text>
-            <Text>Total Books{" "}{Books.length}</Text>
+    <>
+      <StatusBar backgroundColor="#e3f2fd" style="auto" />
+      <SafeAreaView className="flex-1 bg-background">
+        <View className='flex-1' >
+          <UserBox />
+          <Pressable onPress={handleLogout} className="flex-row items-center justify-center bg-primary p-2 rounded-lg mx-5 ">
+            <Text className="text-white font-semibold text-lg">Logout</Text>
+          </Pressable>
+          <View className='px-8 mt-8  ' >
+            <View className="flex-row justify-between items-center text-textDark mb-4 ">
+              <Text className='text-2xl font-bold' >Your Recomendation</Text>
+              <Text>Total Books{" "}{Books.length}</Text>
+            </View>
           </View>
+          {
+            Books.length === 0 && !isInitialLoading && (
+              <View className="flex-1 items-center justify-center">
+                <Text className="text-placeholderText">No books found</Text>
+              </View>
+            )
+          }
+          {isInitialLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#1976D2" />
+            </View>
+          ) : (
+            <FlatList
+              data={Books}
+              renderItem={renderBookCard}
+              keyExtractor={item => item._id}
+              showsVerticalScrollIndicator={false}
+              onEndReachedThreshold={0.1}
+              onEndReached={loadMoreBooks}
+              contentContainerStyle={{ paddingBottom: 16 }}
+              onRefresh={handleRefresh}
+              refreshing={isRefreshing}
+              ListFooterComponent={
+                isLoadingMore ? () => (
+                  <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color="#1976D2" />
+                  </View>
+                )
+                  : null
+              }
+            />
+          )}
         </View>
-        {isInitialLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#1976D2" />
-          </View>
-        ) : (
-          <FlatList
-            data={Books}
-            renderItem={renderBookCard}
-            keyExtractor={item => item._id}
-            showsVerticalScrollIndicator={false}
-            onEndReachedThreshold={0.1}
-            onEndReached={loadMoreBooks}
-            contentContainerStyle={{ paddingBottom: 16 }}
-            onRefresh={handleRefresh}
-            refreshing={isRefreshing}
-            ListFooterComponent={
-              isLoadingMore ? () => (
-                <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-                  <ActivityIndicator size="small" color="#1976D2" />
-                </View>
-              )
-                : null
-            }
-          />
-        )}
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </>
   )
 }
 

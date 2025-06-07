@@ -5,7 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
 import { getAccessToken, getRefreshToken, getUser, isLoggedIn, isTokenExpired } from '@/utils/secureStore';
-// import { loginUser } from '@/store/route';
+import { StatusBar } from 'expo-status-bar';
+
 
 
 const login = () => {
@@ -20,42 +21,42 @@ const login = () => {
   const router = useRouter()
 
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const refreshToken = await getRefreshToken() || ""
-        const isTokenValid = !isTokenExpired(refreshToken)
-        console.log("isTokenValid: ", isTokenValid)
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const refreshToken = await getRefreshToken() || ""
+  //       const isTokenValid = !isTokenExpired(refreshToken)
+  //       console.log("isTokenValid: ", isTokenValid)
 
-        if (!isTokenValid) {
-          console.log("Refresh token is expired")
-          router.push("/(auth)")
-        }
-      } catch (error) {
-        console.log("Error checking token: ", error)
-        router.push("/(auth)")
-      }
-    })()
-  }, [])
+  //       if (!isTokenValid) {
+  //         console.log("Refresh token is expired")
+  //         router.push("/(auth)")
+  //       }
+  //     } catch (error) {
+  //       console.log("Error checking token: ", error)
+  //       router.push("/(auth)")
+  //     }
+  //   })()
+  // }, [])
 
-  useEffect(() => {
-    (async () => {
-      const isUserLoggedIn = await isLoggedIn()
+  // useEffect(() => {
+  //   (async () => {
+  //     const isUserLoggedIn = await isLoggedIn()
 
-      console.log("isUserLoggedIn: ", isUserLoggedIn)
-      if (isUserLoggedIn) {
-        const user = await getUser()
-        const refreshToken = await getRefreshToken() || ""
-        const accessToken = await getAccessToken() || ""
-        setUser(user)
-        setAccessToken(accessToken)
-        setRefreshToken(refreshToken)
-        router.push("/(tabs)")
-      } else {
-        console.log("User is not logged in")
-      }
-    })()
-  }, [])
+  //     console.log("isUserLoggedIn: ", isUserLoggedIn)
+  //     if (isUserLoggedIn) {
+  //       const user = await getUser()
+  //       const refreshToken = await getRefreshToken() || ""
+  //       const accessToken = await getAccessToken() || ""
+  //       setUser(user)
+  //       setAccessToken(accessToken)
+  //       setRefreshToken(refreshToken)
+  //       router.push("/(tabs)")
+  //     } else {
+  //       console.log("User is not logged in")
+  //     }
+  //   })()
+  // }, [])
 
 
 
@@ -68,7 +69,7 @@ const login = () => {
       Alert.alert("Login Successful", response.message)
       setEmail('')
       setPassword('')
-      router.push("/(tabs)")
+      router.replace("/(tabs)")
     }
     else {
       Alert.alert("Login Failed", response.message)
@@ -79,8 +80,8 @@ const login = () => {
 
 
   // console.log("user: ", user)
-  console.log("accessToken: ", accessToken)
-  console.log("refreshToken: ", refreshToken)
+  // console.log("accessToken: ", accessToken)
+  // console.log("refreshToken: ", refreshToken)
 
 
 
@@ -90,7 +91,8 @@ const login = () => {
   return (
 
     <KeyboardAvoidingView>
-      <View className='bg-background h-full flex justify-center' >
+      <StatusBar backgroundColor="#e3f2fd" style="auto" />
+      <SafeAreaView className='bg-background h-full flex justify-center' >
         {/* <Text className="text-red-400 font-bold bg-primary">Hello Pradeep!</Text> */}
         <View className='h-[60vh]' >
           <Image
@@ -156,7 +158,7 @@ const login = () => {
             </View>
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   )
 }

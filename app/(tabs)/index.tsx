@@ -1,12 +1,16 @@
-import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Linking, Pressable, Text, View } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { BookType } from "@/utils/types";
 import { Image } from "expo-image";
+import { Image as ReactImage } from 'react-native';
 import { getRefreshToken, isTokenExpired } from "@/utils/secureStore";
+import { StatusBar } from "expo-status-bar";
+import { BookCardImage } from "@/Component/BookCard";
+
 
 export default function Index() {
 
@@ -16,9 +20,12 @@ export default function Index() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const [isLoadingMore, setisLoadingMore] = useState(false)
+  const [calculatedHeight, setCalculatedHeight] = useState(0)
 
 
-    const router = useRouter()
+  console.log("Books: ", Books)
+
+  const router = useRouter()
 
 
   const { fetchAllBooks, isLoading } = useAuthStore()
@@ -35,6 +42,7 @@ export default function Index() {
         setHasMore(result.data.totalPages > 1)
         setPageNo(1)
         setIsInitialLoading(false)
+
       } else {
         console.log("Error fetching books: ", result.message)
         setIsInitialLoading(false)
@@ -42,18 +50,6 @@ export default function Index() {
     })()
   }, [])
 
-
-  // useEffect(() => {
-  //   (async ()=>{
-  //     const refreshToken = await getRefreshToken() || ""
-  //     const isRefreshTokenValid = isTokenExpired(refreshToken)
-  //     console.log("isRefreshTokenValid: ", isRefreshTokenValid)
-  //     if(!isRefreshTokenValid) {
-  //       console.log("Refresh token is expired")
-  //       router.push("/(auth)")
-  //     }
-  //   })()
-  // }, [])
 
 
   const handleRefresh = async () => {
@@ -109,7 +105,11 @@ export default function Index() {
 
 
 
+
+
+
   const renderBookCard = ({ item }: { item: BookType }) => {
+
     return (
       <View className=" relative flex bg-cardBackground p-3 rounded-lg shadow-md mb-4 mx-5">
         <View className="flex-row  items-center   " >
@@ -130,16 +130,7 @@ export default function Index() {
           />
           <Text className="capitalize font-bold text-textPrimary text-xl ml-3 " >{item.user?.name}</Text>
         </View>
-        <View className="flex items-center justify-center rounded-lg p-1 h-60 ">
-          <Image
-            source={
-              item?.image
-                ? { uri: item.image }
-                : require('../../assets/photos/bookimg.jpeg')
-            }
-            style={{ height: '100%', width: '100%', borderRadius: 10 }} contentFit="cover"
-          />
-        </View>
+        <BookCardImage item={item} />
         <View className=' flex-1 relative flex-row items-center justify-between ' >
           <View className=' flex-1 gap-1 ml-4 ' >
             <Text className="text-textDark font-bold text-2xl capitalize">{item.title}</Text>
@@ -154,6 +145,19 @@ export default function Index() {
               ))}
             </View>
             <Text className="text-placeholderText">{item.caption}</Text>
+            {item.link !== '' && (
+              <Pressable
+                onPress={() => Linking.openURL(item.link)}
+                className="mt-1"
+              >
+                <Text
+                  className="text-blue-600 underline"
+                  numberOfLines={1}
+                >
+                  {item.link}
+                </Text>
+              </Pressable>
+            )}
             <Text className="text-placeholderText">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}</Text>
           </View>
         </View>
@@ -162,53 +166,68 @@ export default function Index() {
     )
   }
 
+
+
+
+  // const renderBookCard = ({ item }: { item: BookType }) => <BookCard item={item} />;
+
+
+
+
+
+
   return (
-    <SafeAreaView className="flex-1 bg-background " >
-      <View className="flex-1 mt-8 " >
-        {isInitialLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#1976D2" />
-          </View>
-        ) : (
-          <FlatList
-            data={Books}
-            renderItem={renderBookCard}
-            keyExtractor={item => item._id}
-            showsVerticalScrollIndicator={false}
-            onEndReachedThreshold={0.1}
-            onEndReached={loadMoreBooks}
-            contentContainerStyle={{ paddingBottom: 16 }}
-            onRefresh={handleRefresh}
-            refreshing={isRefreshing}
-            ListFooterComponent={
-              isLoadingMore ? () => (
-                <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-                  <ActivityIndicator size="small" color="#1976D2" />
+    <>
+      <StatusBar backgroundColor="#e3f2fd" style="auto" />
+      <SafeAreaView className="h-full bg-background " >
+        <View className="flex-1 mt-6 " >
+          {isInitialLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <ActivityIndicator size="large" color="#1976D2" />
+            </View>
+          ) : (
+            <FlatList
+              data={Books}
+              renderItem={renderBookCard}
+              keyExtractor={item => item._id}
+              showsVerticalScrollIndicator={false}
+              onEndReachedThreshold={0.1}
+              onEndReached={loadMoreBooks}
+              contentContainerStyle={{ paddingBottom: 16 }}
+              onRefresh={handleRefresh}
+              refreshing={isRefreshing}
+              ListFooterComponent={
+                isLoadingMore ? () => (
+                  <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color="#1976D2" />
+                  </View>
+                ):(
+                  <View/>
+                )
+                  
+              }
+              ListEmptyComponent={() => (
+                <View className="flex-1 items-center justify-center p-8">
+                  <Ionicons name="book-outline" size={64} color="#6d93b8" />
+                  <Text className="text-textPrimary text-2xl font-bold mt-4">No books found</Text>
+                  <Text className="text-placeholderText text-center mt-2">Be the first to recommend a book or pull down to refresh</Text>
+                  <View className="mt-6 border border-cardBackground rounded-lg p-4 bg-cardBackground/10">
+                    <Text className="text-textDark text-center italic">"The more that you read, the more things you will know. The more that you learn, the more places you'll go." - Dr. Seuss</Text>
+                  </View>
                 </View>
-              )
-                : null
-            }
-            ListEmptyComponent={() => (
-              <View className="flex-1 items-center justify-center p-8">
-                <Ionicons name="book-outline" size={64} color="#6d93b8" />
-                <Text className="text-textPrimary text-2xl font-bold mt-4">No books found</Text>
-                <Text className="text-placeholderText text-center mt-2">Be the first to recommend a book or pull down to refresh</Text>
-                <View className="mt-6 border border-cardBackground rounded-lg p-4 bg-cardBackground/10">
-                  <Text className="text-textDark text-center italic">"The more that you read, the more things you will know. The more that you learn, the more places you'll go." - Dr. Seuss</Text>
+              )}
+              ListHeaderComponent={() => (
+                <View className="flex items-center justify-center px-5 mb-3">
+                  <View className="flex items-center " >
+                    <Text className='text-textPrimary text-5xl' >Suggest 📚 </Text>
+                    <Text>Discover great Learning from community 👇 </Text>
+                  </View>
                 </View>
-              </View>
-            )}
-            ListHeaderComponent={() => (
-              <View className="flex items-center justify-center px-5 mb-3">
-                <View className="flex items-center " >
-                  <Text className='text-textPrimary text-5xl' >Suggest 📚 </Text>
-                  <Text>Discover great Learning from community 👇 </Text>
-                </View>
-              </View>
-            )}
-          />
-        )}
-      </View>
-    </SafeAreaView>
+              )}
+            />
+          )}
+        </View>
+      </SafeAreaView>
+    </>
   );
 }

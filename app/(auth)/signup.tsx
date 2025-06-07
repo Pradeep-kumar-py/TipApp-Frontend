@@ -1,9 +1,10 @@
 import { View, Text, Image, TextInput, KeyboardAvoidingView, Pressable } from 'react-native'
 import React, { useState } from 'react'
-import { Link } from 'expo-router'
+import { Link, useRouter} from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/authStore';
+import { StatusBar } from 'expo-status-bar';
 
 const Signup = () => {
 
@@ -13,6 +14,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { registerUser, isLoading } = useAuthStore()
 
+    const router = useRouter()
 
   const handleSignup = async () => {
     console.log(name, email, password)
@@ -27,6 +29,7 @@ const Signup = () => {
       setEmail('')
       setName('')
       setPassword('')
+      router.replace('/(tabs)')
     }
     else {
       {
@@ -41,7 +44,8 @@ const Signup = () => {
 
   return (
     <KeyboardAvoidingView>
-      <View className='bg-background h-full flex justify-center' >
+      <StatusBar backgroundColor="#e3f2fd" style="auto" />
+      <SafeAreaView className='bg-background h-full flex justify-center' >
         {/* <Text className="text-red-400 font-bold bg-primary">Hello Pradeep!</Text> */}
 
         <View className=' bg-cardBackground m-6 h-[63vh] shadow-lg p-5 rounded-2xl  ' >
@@ -125,7 +129,7 @@ const Signup = () => {
           </View>
 
         </View>
-      </View>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   )
 
