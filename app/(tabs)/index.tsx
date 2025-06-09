@@ -23,7 +23,7 @@ export default function Index() {
   const [calculatedHeight, setCalculatedHeight] = useState(0)
 
 
-  console.log("Books: ", Books)
+  // console.log("Books: ", Books)
 
   const router = useRouter()
 
@@ -36,7 +36,7 @@ export default function Index() {
       setIsInitialLoading(true)
       setBooks([])
       const result = await fetchAllBooks(1, limit)
-      console.log("Result: ", result)
+      // console.log("Result: ", result)
       if (result.success) {
         setBooks([...result.data.books])
         setHasMore(result.data.totalPages > 1)
