@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, FlatList, Linking, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Linking, Pressable, Text, View, StyleSheet } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -111,7 +111,7 @@ export default function Index() {
   const renderBookCard = ({ item }: { item: BookType }) => {
 
     return (
-      <View className=" relative flex bg-cardBackground p-3 rounded-lg shadow-md mb-4 mx-5">
+      <View style={styles.cardBackground} className=" relative flex p-3 rounded-lg shadow-md mb-4 mx-5">
         <View className="flex-row  items-center   " >
           <Image
             source={
@@ -179,7 +179,7 @@ export default function Index() {
   return (
     <>
       <StatusBar backgroundColor="#e3f2fd" style="auto" />
-      <SafeAreaView className="h-full bg-background " >
+      <SafeAreaView style={styles.backGround} className="h-full " >
         <View className="flex-1 mt-6 " >
           {isInitialLoading ? (
             <View className="flex-1 items-center justify-center">
@@ -231,3 +231,13 @@ export default function Index() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  backGround: {
+    backgroundColor: '#e3f2fd',
+  },
+  cardBackground: {
+    backgroundColor: '#f5f9ff',
+  }
+
+})

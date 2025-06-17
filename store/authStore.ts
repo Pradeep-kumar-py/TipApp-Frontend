@@ -8,6 +8,12 @@ const API_BASE_URL = API_BASE_URLS
 
 
 interface AuthState {
+    Name: string | null;
+    Email: string | null;
+    Password: string | null;
+    setSName: (name: string) => void;
+    setSEmail: (email: string) => void;
+    setSPassword: (password: string) => void;
     user: userType | null;
     accessToken?: string | null;
     refreshToken?: string | null;
@@ -32,6 +38,12 @@ interface AuthState {
 
 
 export const useAuthStore = create<AuthState>((set, get) => ({
+    Name: null,
+    Email: null,
+    Password: null,
+    setSName: (name: string) => set({ Name: name }),
+    setSEmail: (email: string) => set({ Email: email }),
+    setSPassword: (password: string) => set({ Password: password }),
     user: null,
     accessToken: null,
     refreshToken: null,

@@ -2,6 +2,9 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userType } from './types';
 import { jwtDecode } from 'jwt-decode';
+import { otpAndTokenType } from './types';
+import { API_BASE_URLS } from './constant';
+
 
 
 // This function saves the access token to secure storage
@@ -88,7 +91,7 @@ export const saveUser = async (user: userType) => {
 
 
 // This function retrieves user data from async storage
-export const getUser = async ():Promise<userType | null> => {
+export const getUser = async (): Promise<userType | null> => {
     try {
         const user = await AsyncStorage.getItem('user');
         return user ? JSON.parse(user) : null;
@@ -110,23 +113,91 @@ export const clearUser = async () => {
     }
 }
 // This function checks if the user is logged in by checking the access token and refresh token
-export const isLoggedIn = async ():  Promise<boolean> => {
+export const isLoggedIn = async (): Promise<boolean> => {
     // const accessToken = await getAccessToken();
     const refreshToken = await getRefreshToken();
     const user = await getUser();
-    return !!refreshToken&& !!user;
+    return !!refreshToken && !!user;
 };
 
 
 // is token expired or not
-export const isTokenExpired = (token: string):boolean =>{
+export const isTokenExpired = (token: string): boolean => {
     try {
-      const { exp } = jwtDecode(token);
-      // exp is in seconds since epoch
-      return Date.now() >= (exp ?? 0) * 1000; // Check if current time is greater than expiration time
+        const { exp } = jwtDecode(token);
+        // exp is in seconds since epoch
+        return Date.now() >= (exp ?? 0) * 1000; // Check if current time is greater than expiration time
     } catch {
-      // Invalid token format → treat as expired
-      return true;
+        // Invalid token format → treat as expired
+        return true;
     }
-  }
+}
 
+
+// this function check if tem token provided is valid or not
+export const verifyToken = async (temporaryToken: string | string[]) => {
+    try {
+        const res = await fetch(`${API_BASE_URLS}/api/otp/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ temporaryToken })
+        });
+
+        const data = await res.json();
+
+        return { success: res.ok, data };
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+// This function check if otp is valid or not
+export const optVerify = async (otp: string | string[]) => {
+    try {
+        const res = await fetch(`${API_BASE_URLS}/api/otp/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otp })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            // OTP is valid
+            alert('OTP verified successfully!');
+            return { success: true, data };
+        } else {
+            // OTP invalid or expired
+            alert('Invalid or expired OTP');
+            return { success: false, data };
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert('An error occurred while verifying the OTP');
+
+    }
+}
+
+// this function is to send email to user for verification
+export const sendVerificationEmail = async (to: string, title: string, content: string) => {
+    try {
+        const res = await fetch(`${API_BASE_URLS}/api/user/resend-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to, title, content })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            return { success: true, data };
+        } else {
+            return { success: false, data };
+        }
+    } catch (err) {
+        console.error(err);
+        alert('An error occurred while sending the verification email');
+        return { success: false, error: err };
+    }
+}

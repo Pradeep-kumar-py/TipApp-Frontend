@@ -44,3 +44,12 @@ export interface BookType {
     link: string,
     createdAt: string,
 }
+
+export type DeepLinkEvent = {
+    url: string;
+}
+
+export type otpAndTokenType = {
+    otp?: string;
+    token?: string;
+}

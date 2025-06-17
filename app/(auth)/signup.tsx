@@ -1,10 +1,11 @@
-import { View, Text, Image, TextInput, KeyboardAvoidingView, Pressable } from 'react-native'
+import { View, Text, Image, TextInput, KeyboardAvoidingView, Pressable, Alert } from 'react-native'
 import React, { useState } from 'react'
-import { Link, useRouter} from 'expo-router'
+import { Link, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { MaterialCommunityIcons, FontAwesome6 } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/authStore';
 import { StatusBar } from 'expo-status-bar';
+import { sendVerificationEmail } from '@/utils/secureStore';
 
 const Signup = () => {
 
@@ -12,32 +13,68 @@ const Signup = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false);
-  const { registerUser, isLoading } = useAuthStore()
+  const [isVerifying, setIsVerifying] = useState(false)
+  const { registerUser, isLoading, setSEmail, setSName, setSPassword } = useAuthStore()
 
-    const router = useRouter()
 
-  const handleSignup = async () => {
+
+  const router = useRouter()
+
+  // const handleSignup = async () => {
+  //   console.log(name, email, password)
+  //   if (name === '' || email === '' || password === '') {
+  //     alert('Please fill all the fields')
+  //     return
+  //   }
+  //   const response = await registerUser(name, email, password)
+  //   console.log("Response: ", response)
+  //   if (response.success) {
+  //     alert('User registered successfully')
+  //     setPassword('')
+  //     router.replace('/(tabs)')
+  //   }
+  //   else {
+  //     {
+  //       alert('User registration failed')
+  //       setEmail('')
+  //       setName('')
+  //       setPassword('')
+  //     }
+
+  //   }
+  // }
+
+  const handleVerification = async () => {
     console.log(name, email, password)
     if (name === '' || email === '' || password === '') {
       alert('Please fill all the fields')
       return
     }
-    const response = await registerUser(name, email, password)
-    console.log("Response: ", response)
-    if (response.success) {
-      alert('User registered successfully')
-      setEmail('')
-      setName('')
-      setPassword('')
-      router.replace('/(tabs)')
-    }
-    else {
-      {
-        alert('User registration failed')
-        setEmail('')
-        setName('')
-        setPassword('')
+    try {
+      setIsVerifying(true)
+      console.log("state", isVerifying)
+      const to = email
+      const title = name + ' - Account Verification'
+      const content = `Please verify your account by clicking on the link below or entering the OTP sent to your email.`
+      const response = await sendVerificationEmail(to, title, content)
+      console.log("Response: ", response)
+      if (response?.success) {
+        Alert.alert('Verification email sent successfully!', 'Please check your email for the verification link or OTP.')
+        setSEmail(email)
+        setSName(name)
+        setSPassword(password)
+        setIsVerifying(false)
+        console.log("state", isVerifying)
+        router.push('/(auth)/otpVerification')
       }
+      else {
+        alert('Failed to send verification email')
+        setIsVerifying(false)
+      }
+    } catch (error) {
+      console.error("Error sending verification email: ", error);
+      alert('Failed to send verification email')
+      setIsVerifying(false)
 
     }
   }
@@ -48,7 +85,7 @@ const Signup = () => {
       <SafeAreaView className='bg-background h-full flex justify-center' >
         {/* <Text className="text-red-400 font-bold bg-primary">Hello Pradeep!</Text> */}
 
-        <View className=' bg-cardBackground m-6 h-[63vh] shadow-lg p-5 rounded-2xl  ' >
+        <View className=' bg-cardBackground m-6 shadow-lg p-5 rounded-2xl  ' >
           <View className='flex items-center justify-center mb-4' >
             <View className='flex flex-row justify-center items-center gap-2' >
               <Text className='text-textPrimary text-5xl' >Suggest</Text>
@@ -112,13 +149,12 @@ const Signup = () => {
             </View>
           </View>
 
-          <Pressable onPress={handleSignup} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
-            {isLoading ? (
+          <Pressable onPress={handleVerification} className="bg-textSecondary p-3 rounded-lg mt-10 mb-3">
+            {isVerifying ? (
               <FontAwesome6 name="spinner" size={20} color="white" className="animate-spin text-center" />
             ) : (
               <Text className="text-white text-center font-bold">Signup</Text>
             )}
-            {/* <Text className="text-white text-center font-bold">Signup</Text> */}
           </Pressable>
           <View className='flex flex-row gap-2 justify-center items-center'>
             <Text>Already have a account ?</Text>
