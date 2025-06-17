@@ -94,14 +94,14 @@ const login = () => {
       <StatusBar backgroundColor="#e3f2fd" style="auto" />
       <SafeAreaView className='bg-background h-full flex justify-center' >
         {/* <Text className="text-red-400 font-bold bg-primary">Hello Pradeep!</Text> */}
-        <View className='h-[60vh]' >
+        <View className='h-[65vh]' >
           <Image
             source={require('../../assets/photos/bookImage1.png')}
             style={{ width: "auto", height: 200 }}
             resizeMode="cover"
           />
 
-          <View className=' bg-cardBackground m-10 h-[40vh] shadow-lg p-5 rounded-2xl  ' >
+          <View className=' bg-cardBackground m-10 shadow-lg p-5 rounded-2xl  ' >
             <View>
               <Text className="text-textDark font-bold text-lg mb-3">Email</Text>
               <View className="flex relative flex-row items-center border border-border bg-[#f0f8ff] p-1 rounded-lg mb-3">
