@@ -1,17 +1,52 @@
-import { View, Text, Pressable } from 'react-native'
-import React, { useEffect } from 'react'
-import { getAccessToken, getRefreshToken, getUser, isLoggedIn, isTokenExpired } from '@/utils/secureStore'
+import { View, Text, Pressable, EmitterSubscription } from 'react-native'
+import React, { useEffect, useCallback, useState } from 'react'
+import { getAccessToken, getRefreshToken, getUser, isLoggedIn, isTokenExpired, verifyToken } from '@/utils/secureStore'
 import { Link, useRouter } from 'expo-router'
+import * as Linking from 'expo-linking';
 import { useAuthStore } from '@/store/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { StatusBar } from 'expo-status-bar'
 import { MotiView, MotiText } from 'moti';
+import { DeepLinkEvent } from '@/utils/types';
 
 const index = () => {
     const router = useRouter()
-    const { isLoading, loginUser, user, accessToken, setUser, setAccessToken, setRefreshToken, refreshToken } = useAuthStore()
+    const { isLoading, loginUser, user, accessToken, Name, Email, Password, setUser, setAccessToken, setRefreshToken, refreshToken, registerUser, setSEmail, setSName, setSPassword } = useAuthStore()
+    const name = Name, email = Email, password = Password;
+    console.log("Name: ", name)
+
+    const handleSignup = async () => {
+        console.log(name, email, password)
+        // Add null checks before calling registerUser
+        if (!name || !email || !password) {
+            alert('Please fill all the fields')
+            return
+        }
+        const response = await registerUser(name, email, password)
+        console.log("Response: ", response)
+        if (response.success) {
+            alert('User registered successfully')
+            setSEmail('')
+            setSName('')
+            setSPassword('')
+            // Navigate to the main app screen after successful registration
+            router.replace('/(tabs)')
+        }
+        else {
+            {
+                alert('User registration failed')
+                setSEmail('')
+                setSName('')
+                setSPassword('')
+                // Optionally, you can navigate back to the signup screen or show an error message
+                router.push('/(auth)/signup')
+            }
+
+        }
+    }
+
 
     useEffect(() => {
         (async () => {
@@ -50,6 +85,56 @@ const index = () => {
             }
         })()
     }, [])
+    const handleDeepLink = useCallback(async (event: DeepLinkEvent) => {
+        console.log('🔗 Deep link received:', event.url);
+
+        try {
+            const { path, queryParams } = Linking.parse(event.url);
+            console.log('Path from deep link >>>', path);
+            console.log('Query from deep link >>>', queryParams);
+
+            if (path === 'verify-otp' && queryParams?.token) {
+                const res = await verifyToken(queryParams?.token);
+                if (res?.success) {
+                    // Check if we have the required registration data
+                    if (name && email && password) {
+                        const registrationResult: any = await handleSignup();
+                        if (registrationResult) {
+                            alert('Your account has been registered and verified successfully!');
+                            router.replace('/(tabs)');
+                        }
+                    } else {
+                        alert('Registration data not found. Please try signing up again.');
+                        router.push('/(auth)/signup');
+                    }
+                } else {
+                    alert('Invalid or expired verification link');
+                    router.push('/(auth)/signup');
+                }
+            }
+        } catch (error) {
+            console.error('Error processing deep link:', error);
+            alert('An error occurred during verification');
+        }
+    }, [name, email, password, handleSignup]);
+
+    // Handle deep linking for account verification
+
+    useEffect(() => {
+        (async () => {
+            const initialURL = await Linking.getInitialURL();
+            if (initialURL) handleDeepLink({ url: initialURL });
+        })();
+
+        const subscription = Linking.addEventListener('url', handleDeepLink);
+        return () => {
+            // Correct:
+            subscription.remove();
+        };
+    }, [handleDeepLink]);
+
+
+
 
     return (
         <>
