@@ -1,4 +1,4 @@
-import { View, Text, KeyboardAvoidingView, ScrollView, TextInput, Pressable, Platform } from 'react-native'
+import { View, Text, KeyboardAvoidingView, ScrollView, TextInput, Pressable, Platform, Button } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,8 @@ import { clearSecureStore } from '@/utils/secureStore';
 import { StatusBar } from 'expo-status-bar';
 import { MotiPressable } from 'moti/interactions'
 import { AnimatedButton } from '@/Component/AnimatedButton';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { useEvent } from 'expo';
 
 
 const Upload = () => {
@@ -17,17 +19,18 @@ const Upload = () => {
   const [caption, setCaption] = useState('')
   const [rating, setRating] = useState(0)
   const [link, setLink] = useState('')
-  const [imageFile, setImageFile] = useState<any>(null);
-  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [mediaFile, setMediaFile] = useState<any>(null);
+  const [selectedMediaUri, setSelectedMediaUri] = useState<string | undefined>(undefined);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null)
+  const [mediaType, setMediaType] = useState<'image' | 'video' | undefined>(undefined);
 
   const { uploadBook, isLoading } = useAuthStore()
 
-  
+
 
   const pickImageAsync = async () => {
     let image = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ['images', 'videos'],
       allowsEditing: true,
       quality: 1,
     });
@@ -36,13 +39,15 @@ const Upload = () => {
       console.log(image);
 
       const asset = image.assets[0];
-      setImageFile({
+      setMediaFile({
         uri: asset.uri,
         type: asset.mimeType ?? 'image/jpeg',
-        name: asset.fileName ?? 'photo.jpg',
+        // name: asset.fileName ?? 'photo.jpg',
+        name: asset.fileName ?? (asset.mimeType?.startsWith('video') ? 'video.mp4' : 'photo.jpg'),
       })
 
-      setSelectedImage(image.assets[0].uri);
+      setSelectedMediaUri(asset.uri);
+      setMediaType(asset.mimeType?.startsWith('video') ? 'video' : 'image');
 
       // Get image dimensions
       // Use dimensions from asset
@@ -66,8 +71,8 @@ const Upload = () => {
     const formData = new FormData();
 
     // Append the image file if available
-    if (imageFile) {
-      formData.append('image', imageFile as any);
+    if (mediaFile) {
+      formData.append('image', mediaFile as any);
     }
 
     // Append other form data
@@ -94,8 +99,8 @@ const Upload = () => {
         setCaption('');
         setRating(0);
         setLink('');
-        setImageFile(null);
-        setSelectedImage(undefined);
+        setMediaFile(null);
+        setSelectedMediaUri(undefined);
       } else {
         console.error("Upload failed123: ", result.message);
         alert(`Upload failed: ${result.message}`);
@@ -107,6 +112,14 @@ const Upload = () => {
 
   };
 
+  const videoSource = selectedMediaUri;
+
+  const player = videoSource ? useVideoPlayer(videoSource, player => {
+    player.loop = true;
+    player.play();
+  }) : null;
+
+  const { isPlaying } = useEvent(player!, 'playingChange', { isPlaying: player!.playing });
 
   return (
     <>
@@ -161,18 +174,35 @@ const Upload = () => {
                 <View className="w-full mb-4 relative">
                   <Text className="text-textPrimary font-semibold mb-1">Book or Course Image</Text>
                   <Pressable onPress={pickImageAsync} className="flex items-center justify-center border-[1px] border-border rounded-lg p-[2px] " >
-                    {selectedImage && imageDimensions ? (
+                    {selectedMediaUri && imageDimensions && mediaType === 'image' ? (
                       <View className="flex items-center justify-center w-full">
                         <Image
-                          source={{ uri: selectedImage }}
+                          source={{ uri: selectedMediaUri }}
                           style={{
-                            width: '100%', 
+                            width: '100%',
                             aspectRatio: imageDimensions.width / imageDimensions.height,
-                            borderRadius: 8, 
+                            borderRadius: 8,
                             alignSelf: 'center',
                           }}
                           contentFit="cover"
                           alt="Selected Image"
+                        />
+                      </View>
+                    ) : selectedMediaUri && mediaType === 'video' ? (
+                      <View className="flex items-center justify-center w-full">
+                        <VideoView
+                          player={player!}
+                          style={{ width: '100%', height: 200, borderRadius: 8 }}
+                        />
+                        <Button
+                          title={isPlaying ? 'Pause' : 'Play'}
+                          onPress={() => {
+                            if (isPlaying) {
+                              player?.pause();
+                            } else {
+                              player?.play();
+                            }
+                          }}
                         />
                       </View>
                     ) : (

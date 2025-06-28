@@ -33,6 +33,7 @@ interface AuthState {
     fetchAllBooks: (pageNo: number, limit: number) => Promise<{ success: boolean; message: string; data?: any }>;
     uploadProfileImage: (formData: FormData) => Promise<{ success: boolean; message: string; data?: any }>;
     deleteBook: (bookId: string) => Promise<{ success: boolean; message: string; data?: any }>;
+    getSingleBook: (bookId: string) => Promise<{ success: boolean; message: string; data?: any }>;
 
 }
 
@@ -295,6 +296,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             console.error('Error deleting book:', error);
             set({ isLoading: false });
             return { success: false, message: 'Error deleting book' };
+        }
+    },
+
+    getSingleBook: async (bookId: string): Promise<{ success: boolean; message: string; data?: any }> => {
+        set({ isLoading: true });
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/book/getbook/${bookId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            set({ isLoading: false });
+            return { success: true, message: 'Book fetched successfully', data };
+
+        } catch (error) {
+            console.error('Error fetching book:', error);
+            set({ isLoading: false });
+            return { success: false, message: 'Error fetching book' };
         }
     }
 

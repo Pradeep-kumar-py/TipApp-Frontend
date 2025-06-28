@@ -10,6 +10,8 @@ import { Image as ReactImage } from 'react-native';
 import { getRefreshToken, isTokenExpired } from "@/utils/secureStore";
 import { StatusBar } from "expo-status-bar";
 import { BookCardImage } from "@/Component/BookCard";
+import ShowMoreText from "@/Component/ShowMoreText"
+
 
 
 export default function Index() {
@@ -130,8 +132,13 @@ export default function Index() {
           />
           <Text className="capitalize font-bold text-textPrimary text-xl ml-3 " >{item.user?.name}</Text>
         </View>
-        <BookCardImage item={item} />
-        <View className=' flex-1 relative flex-row items-center justify-between ' >
+        <Link href={{
+          pathname: "/page/[id]",
+          params: { id: item._id, title: item.title }
+        }} >
+          <BookCardImage item={item} />
+        </Link>
+        <View className='relative flex-row items-center justify-between ' >
           <View className=' flex-1 gap-1 ml-4 ' >
             <Text className="text-textDark font-bold text-2xl capitalize">{item.title}</Text>
             <View className="flex-row  items-center rounded-lg " >
@@ -144,7 +151,9 @@ export default function Index() {
                 />
               ))}
             </View>
-            <Text className="text-placeholderText">{item.caption}</Text>
+            <View className="text-placeholderText w-full ">
+              <ShowMoreText text={item.caption} noLine={2} />
+            </View>
             {item.link !== '' && (
               <Pressable
                 onPress={() => Linking.openURL(item.link)}
@@ -201,10 +210,10 @@ export default function Index() {
                   <View style={{ paddingVertical: 16, alignItems: 'center' }}>
                     <ActivityIndicator size="small" color="#1976D2" />
                   </View>
-                ):(
-                  <View/>
+                ) : (
+                  <View />
                 )
-                  
+
               }
               ListEmptyComponent={() => (
                 <View className="flex-1 items-center justify-center p-8">

@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { getAccessToken, getRefreshToken, isTokenExpired, saveAccessToken } from './secureStore';   // assume you made isTokenExpired in a file called auth.ts
+import { API_BASE_URLS } from './constant';
 
 interface FetchOptions extends RequestInit {} // RequestInit is already built-in type for fetch options
 
@@ -13,7 +14,7 @@ export async function fetchWithAuth(url: string, options: FetchOptions = {}): Pr
       throw new Error('No refresh token available');
     }
 
-    const refreshed = await fetch('https://tipapp.azurewebsites.net/api/user/refresh-token', {
+    const refreshed = await fetch(`${API_BASE_URLS}/api/user/refresh-token`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${refreshToken}`,

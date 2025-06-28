@@ -10,6 +10,11 @@ type BookType = {
     image: string;
 };
 
+function isVideo(url: string) {
+    // Simple check for common video extensions
+    return /\.(mp4|mov|webm|ogg)$/i.test(url);
+}
+
 export const BookCardImage = ({ item }: { item: BookType }) => {
     const [AspectRatio, setAspectRatio] = useState<number>(.75); // Default aspect ratio, can be adjusted based on your needs
 
@@ -29,7 +34,7 @@ export const BookCardImage = ({ item }: { item: BookType }) => {
                     // height: imageHeight,
                     aspectRatio: AspectRatio,
                     borderRadius: 10,
-                    
+
 
                 }}
                 contentFit="contain"
